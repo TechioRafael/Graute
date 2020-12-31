@@ -8,11 +8,11 @@ const ApiError = require('../errors/apiError');
 const router = express.Router();
 
 router.get("/user", middlewares.obterTokenDoUsuario, async (request, response, next) => {
-    const idUsuario = validator.escape(request.user);
+    const userId = validator.escape(request.user);
 
-    const infoUser = await UserController.getInfoUser(idUsuario);
-    if(infoUser){
-        response.status(200).json(infoUser);
+    const userInfo = await UserController.getUserInfo(userId);
+    if(userInfo){
+        response.status(200).json(userInfo);
     }else{
         next(ApiError.internalServerError("Something Gets Wrong"));
     }

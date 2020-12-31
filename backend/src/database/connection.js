@@ -9,19 +9,19 @@ const connection = mysql.createConnection({
 
 connection.connect((error) => {
     if (error) {
-        console.log(`ERRO ao tentar conectar ao banco de dados. Erro: `, error);
+        console.log(`ERROR - error trying access the database. Error: `, error);
     } else {
-        console.log(`Conectado ao banco de dados!`)
+        console.log(`Conected to Database!`)
     }
 })
 
-// Funções de Select
+// Select SQL Functions
 
 connection.sqlSelect = async (query) => {
     return await new Promise((resolve, reason) => {
         connection.query(query, (error, results, fields) => {
             if (error) {
-                console.log(`ERRO de SQL em uma consulta SQL SELECT. Erro: `, error);
+                console.log(`ERROR - SQL error on a SQL SELECT. Error: `, error);
                 resolve(false);
             } else {
                 resolve(results);
@@ -34,7 +34,7 @@ connection.sqlSelectRow = async (query) => {
     return await new Promise((resolve, reason) => {
         connection.query(query, (error, results, fields) => {
             if (error) {
-                console.log(`ERRO de SQL em uma consulta SQL de SELECT ROW. Erro: `, error);
+                console.log(`ERROR - SQL error on a SQL SELECT ROW. Erro: `, error);
                 resolve(false);
             } else {
                 resolve(results[0]);
@@ -47,7 +47,7 @@ connection.sqlSelectValue = async (query) => {
     return await new Promise((resolve, reason) => {
         connection.query(query, (error, results, fields) => {
             if (error) {
-                console.log(`ERRO de SQL em uma consulta SQL de SELECT VALUE. Erro: `, error);
+                console.log(`ERROR - SQL error on a SQL SELECT VALUE. Erro: `, error);
                 resolve(false);
             } else {
                 resolve(Object.values(results[0])[0]);
@@ -56,13 +56,13 @@ connection.sqlSelectValue = async (query) => {
     });
 }
 
-// Funções de Update
+// Update SQL Functions
 
 connection.sqlUpdate = async (query) => {
     return await new Promise((resolve, reason) => {
         connection.query(query, (error, results, fields) => {
             if (error) {
-                console.log(`ERRO de SQL em uma consulta SQL de UPDATE. Erro: `, error);
+                console.log(`ERROR - SQL error on a SQL UPDATE. Erro: `, error);
                 resolve(false);
             } else {
                 resolve(results.changedRows);
@@ -71,13 +71,13 @@ connection.sqlUpdate = async (query) => {
     });
 }
 
-// Funções de Delete
+// Delete SQL Functions
 
 connection.sqlDelete = async (query) => {
     return await new Promise((resolve, reason) => {
         connection.query(query, (error, results, fields) => {
             if (error) {
-                console.log(`ERRO de SQL em uma consulta SQL de DELETE. Erro: `, error);
+                console.log(`ERROR - SQL error on a SQL DELETE. Erro: `, error);
                 resolve(false);
             } else {
                 resolve(results.affectedRows);
@@ -86,13 +86,13 @@ connection.sqlDelete = async (query) => {
     });
 }
 
-// Funções de Insert
+// Insert SQL Functions
 
 connection.sqlInsert = async (query) => {
     return await new Promise((resolve, reason) => {
         connection.query(query, (error, results, fields) => {
             if (error) {
-                console.log(`ERRO de SQL em uma consulta SQL de INSERT. Erro: `, error);
+                console.log(`ERROR - SQL error on a SQL INSERT. Erro: `, error);
                 resolve(false);
             } else {
                 resolve(results.insertId);
