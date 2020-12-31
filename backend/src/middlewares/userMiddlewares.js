@@ -6,8 +6,10 @@ userMiddlewares.obterTokenDoUsuario = (request, response, next) => {
     try{
         const baererToken = request.headers.authorization;
         const token = baererToken.split(" ")[1] || baererToken;
+
+        request.user = token;
         
-        console.log(`REQUESTED ${request.method} ${request.url} BY ${token}`);
+        console.log(`REQUESTED ${request.method} ${request.url} BY ID ${token}`);
 
         next();
     }catch(error){

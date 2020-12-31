@@ -8,7 +8,7 @@ const errorHandler = (error, request, response, next) => {
     }else{
         console.log(`UNEXPECTED ERROR: `, error)
 
-        res.status(500).json({message: "Something gets wrong"});
+        response.status(500).json({message: "Something gets wrong"});
     }
 
 }
