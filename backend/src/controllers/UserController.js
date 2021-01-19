@@ -1,6 +1,6 @@
 // Modules
 const jwt = require('jsonwebtoken');
-require('dotenv').config({path: './.env'})
+require('dotenv').config({ path: './.env' })
 
 // Models
 const User = require('../models/User');
@@ -12,7 +12,7 @@ const string = require('../helpers/string');
 const ApiError = require('../errors/apiError');
 
 const getUserInfo = async (userId) => {
-    try{
+    try {
 
         const user = User.getUser(userId);
 
@@ -26,14 +26,14 @@ const getUserInfo = async (userId) => {
 
         return formattedData;
 
-    } catch (error){
+    } catch (error) {
         console.log(`ERROR - trying to GET user data with ID ${userId}. Error:`, error);
         return false;
     }
 }
 
 const createUser = async (userData) => {
-    try{
+    try {
         const salt = string.randomString(9);
 
         const user = User.getUser();
@@ -50,7 +50,7 @@ const createUser = async (userData) => {
         })
 
         return newUserId;
-    } catch (error){
+    } catch (error) {
         console.log(`ERROR - trying to CREATE user. Error:`, error);
 
         throw ApiError.internalServerError("Something gets wrong");
@@ -63,16 +63,16 @@ const login = async (data) => {
 
         const id = await user.tryLogin(data.login, data.password);
 
-        if(id){
+        if (id) {
             return jwt.sign(id, process.env.SECRET);
-        }else{
+        } else {
             throw ApiError.notFound("Incorrect login or password")
         }
 
-    } catch(error){
-        if(error instanceof ApiError){
+    } catch (error) {
+        if (error instanceof ApiError) {
             throw error;
-        }else {
+        } else {
             console.log(`ERROR - trying to login. Error:`, error);
 
             throw ApiError.internalServerError("Something gets wrong")

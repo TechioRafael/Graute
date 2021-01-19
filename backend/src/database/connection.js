@@ -18,17 +18,17 @@ connection.connect((error) => {
 connection.config.queryFormat = function (query, params = {}) {
     if (!params) return query;
     return query.replace(/\:(\w+)/g, function (txt, key) {
-      if (params.hasOwnProperty(key)) {
-          if(params[key] && params[key].raw){
-            return params[key].value
-          }else{
-            return this.escape(params[key]);
-          }
-      }
-      return txt;
+        if (params.hasOwnProperty(key)) {
+            if (params[key] && params[key].raw) {
+                return params[key].value
+            } else {
+                return this.escape(params[key]);
+            }
+        }
+        return txt;
     }.bind(this));
-  };
-  
+};
+
 // Select SQL Functions
 connection.sqlSelect = async (query, params = {}) => {
     return await new Promise((resolve, reason) => {

@@ -14,28 +14,34 @@ const ApiError = require('../errors/apiError');
 const router = express.Router();
 
 router.get("/user", middlewares.getUserToken, async (request, response, next) => {
-    const userId = validator.escape(request.user);
+    try {
+        const userId = validator.escape(request.user);
 
-    const userInfo = await UserController.getUserInfo(userId);
-    if(userInfo){
+        const userInfo = await UserController.getUserInfo(userId);
+
         response.status(200).json(userInfo);
-    }else{
-        next(ApiError.internalServerError("Something Went Wrong"));
+        
+    } catch (error) {
+        if (error instanceof ApiError) {
+            next(error);
+        } else {
+            next(ApiError.internalServerError("Something Went Wrong"))
+        }
     }
 })
 
 router.post("/user", middlewares.verifyUserData, middlewares.verifyUserUniqueData, async (request, response, next) => {
-    try{
+    try {
         const data = request.body;
 
         const userId = await UserController.createUser(data);
-        
+
         const userInfo = await UserController.getUserInfo(userId);
 
         response.status(200).json(userInfo);
 
     } catch (error) {
-        if(error instanceof ApiError){
+        if (error instanceof ApiError) {
             next(error);
         } else {
             next(ApiError.internalServerError("Something Went Wrong"))
@@ -44,17 +50,17 @@ router.post("/user", middlewares.verifyUserData, middlewares.verifyUserUniqueDat
 })
 
 router.post("/user/login", middlewares.verifyUserLoginData, async (request, response, next) => {
-    try{
+    try {
         const data = request.body;
 
         const userId = await UserController.login(data);
 
-        response.status(200).json({accesToken: userId});
-        
-    } catch (error){
-        if(error instanceof ApiError){
+        response.status(200).json({ accesToken: userId });
+
+    } catch (error) {
+        if (error instanceof ApiError) {
             next(error);
-        }else {
+        } else {
             next(ApiError.internalServerError("Something Went Wrong"))
         }
     }
