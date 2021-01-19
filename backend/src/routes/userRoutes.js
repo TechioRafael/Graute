@@ -1,8 +1,14 @@
+// Modules
 const express = require('express');
 const validator = require('validator').default;
 
-const middlewares = require('../middlewares/middlewares');
+// Controllers
 const UserController = require('../controllers/UserController');
+
+// Middlewares 
+const middlewares = require('../middlewares/middlewares');
+
+// Errors
 const ApiError = require('../errors/apiError');
 
 const router = express.Router();
@@ -53,4 +59,5 @@ router.post("/user/login", middlewares.verifyUserLoginData, async (request, resp
         }
     }
 })
+
 module.exports = router;
