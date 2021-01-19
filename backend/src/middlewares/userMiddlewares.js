@@ -11,7 +11,7 @@ const ApiError = require("../errors/apiError");
 
 const userMiddlewares = {};
 
-userMiddlewares.getUserToken = (request, response, next) => {
+userMiddlewares.verifyUserToken = (request, response, next) => {
     try {
         const baererToken = request.headers.authorization;
         const token = baererToken.split(" ")[1] || baererToken;

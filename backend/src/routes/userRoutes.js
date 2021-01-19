@@ -13,14 +13,14 @@ const ApiError = require('../errors/apiError');
 
 const router = express.Router();
 
-router.get("/user", middlewares.getUserToken, async (request, response, next) => {
+router.get("/user", middlewares.verifyUserToken, async (request, response, next) => {
     try {
         const userId = validator.escape(request.user);
 
         const userInfo = await UserController.getUserInfo(userId);
 
         response.status(200).json(userInfo);
-        
+
     } catch (error) {
         if (error instanceof ApiError) {
             next(error);
