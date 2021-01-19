@@ -15,11 +15,24 @@ connection.connect((error) => {
     }
 })
 
+connection.config.queryFormat = function (query, params = {}) {
+    if (!params) return query;
+    return query.replace(/\:(\w+)/g, function (txt, key) {
+      if (params.hasOwnProperty(key)) {
+          if(params[key] && params[key].raw){
+            return params[key].value
+          }else{
+            return this.escape(params[key]);
+          }
+      }
+      return txt;
+    }.bind(this));
+  };
+  
 // Select SQL Functions
-
-connection.sqlSelect = async (query) => {
+connection.sqlSelect = async (query, params = {}) => {
     return await new Promise((resolve, reason) => {
-        connection.query(query, (error, results, fields) => {
+        connection.query(query, params, (error, results, fields) => {
             if (error) {
                 console.log(`ERROR - SQL error on a SQL SELECT. Error: `, error);
                 resolve(false);
@@ -30,9 +43,9 @@ connection.sqlSelect = async (query) => {
     })
 }
 
-connection.sqlSelectRow = async (query) => {
+connection.sqlSelectRow = async (query, params = {}) => {
     return await new Promise((resolve, reason) => {
-        connection.query(query, (error, results, fields) => {
+        connection.query(query, params, (error, results, fields) => {
             if (error) {
                 console.log(`ERROR - SQL error on a SQL SELECT ROW. Erro: `, error);
                 resolve(false);
@@ -43,14 +56,14 @@ connection.sqlSelectRow = async (query) => {
     });
 }
 
-connection.sqlSelectValue = async (query) => {
+connection.sqlSelectValue = async (query, params = {}) => {
     return await new Promise((resolve, reason) => {
-        connection.query(query, (error, results, fields) => {
+        connection.query(query, params, (error, results, fields) => {
             if (error) {
                 console.log(`ERROR - SQL error on a SQL SELECT VALUE. Erro: `, error);
                 resolve(false);
             } else {
-                resolve(Object.values(results[0])[0]);
+                resolve(results[0] ? Object.values(results[0])[0] : false);
             }
         })
     });
@@ -58,9 +71,9 @@ connection.sqlSelectValue = async (query) => {
 
 // Update SQL Functions
 
-connection.sqlUpdate = async (query) => {
+connection.sqlUpdate = async (query, params = {}) => {
     return await new Promise((resolve, reason) => {
-        connection.query(query, (error, results, fields) => {
+        connection.query(query, params, (error, results, fields) => {
             if (error) {
                 console.log(`ERROR - SQL error on a SQL UPDATE. Erro: `, error);
                 resolve(false);
@@ -73,9 +86,9 @@ connection.sqlUpdate = async (query) => {
 
 // Delete SQL Functions
 
-connection.sqlDelete = async (query) => {
+connection.sqlDelete = async (query, params = {}) => {
     return await new Promise((resolve, reason) => {
-        connection.query(query, (error, results, fields) => {
+        connection.query(query, params, (error, results, fields) => {
             if (error) {
                 console.log(`ERROR - SQL error on a SQL DELETE. Erro: `, error);
                 resolve(false);
@@ -88,9 +101,9 @@ connection.sqlDelete = async (query) => {
 
 // Insert SQL Functions
 
-connection.sqlInsert = async (query) => {
+connection.sqlInsert = async (query, params = {}) => {
     return await new Promise((resolve, reason) => {
-        connection.query(query, (error, results, fields) => {
+        connection.query(query, params, (error, results, fields) => {
             if (error) {
                 console.log(`ERROR - SQL error on a SQL INSERT. Erro: `, error);
                 resolve(false);

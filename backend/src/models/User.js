@@ -5,8 +5,17 @@ class User extends TableModel{
         super('user','id', id);
     }
 
-    static obterUser(id){
+    static getUser(id){
         return new User(id);
+    }
+
+    async tryLogin(login, password){
+        return await TableModel.sqlSelectValue(`
+            SELECT ${TableModel.escapeId(this.identifierColumnName)}
+            FROM ${TableModel.escapeId(this.tableName)}
+            WHERE (${TableModel.escapeId('email')} = :login OR ${TableModel.escapeId('name')} = :login )
+                AND ${TableModel.escapeId('password')} = :password)
+        `, {login: login, password: {raw: true, value: `SHA1(CONCAT(${TableModel.escape(password)}, password_salt)`}})
     }
 }
 

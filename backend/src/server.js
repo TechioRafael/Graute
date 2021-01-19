@@ -12,7 +12,7 @@ const errorHandler = require('./errors/errorHandler');
 const server = express();
 http.createServer(server);
 
-
+server.use(express.json())
 server.use(routes);
 server.use(errorHandler);
 
