@@ -57,6 +57,50 @@ const createUser = async (userData) => {
     }
 }
 
+const updateUser = async (userData, userId) => {
+    try {
+        const escapeData = {};
+
+        const user = User.getUser(userId);
+
+        if (userData.name) {
+            escapeData.name = userData.name;
+        }
+
+        if (userData.email) {
+            escapeData.email = userData.email;
+        }
+        
+        if (userData.password) {
+            const salt = string.randomString(9);
+
+            escapeData.password = {
+                raw: true,
+                value: `SHA1('${userData.password}${salt}')`
+            };
+
+            escapeData.password_salt = salt;
+        }
+
+        if (userData.birthdate) {
+            escapeData.birthdate = userData.birthdate;
+        }
+
+        if (Object.keys(escapeData).length > 0) {
+            await user.changeData(userData);
+        }
+
+        return userId;
+    } catch (error) {
+        if(error instanceof ApiError){
+            throw error;
+        }else{
+            console.log(`ERROR - trying to Update User's (${userId}) data. Error:`, error);
+            throw ApiError.internalServerError("Something Went Wrong");
+        }
+    }
+}
+
 const login = async (data) => {
     try {
         const user = User.getUser();
@@ -83,5 +127,6 @@ const login = async (data) => {
 module.exports = {
     getUserInfo,
     createUser,
+    updateUser,
     login
 }
