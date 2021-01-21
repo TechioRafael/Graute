@@ -50,6 +50,24 @@ userMiddlewares.verifyUserData = async (request, response, next) => {
     }
 }
 
+userMiddlewares.verifyUserEditData = async (request, response, next) => {
+    try {
+        const schema = yup.object().required().shape({
+            name: yup.string().notRequired().min(7),
+            email: yup.string().notRequired().email(),
+            password: yup.string().notRequired().min(8),
+            birthdate: yup.date().notRequired()
+        });
+
+        const normalizedData = await schema.validate(request.body)
+        request.body = normalizedData;
+        next();
+    } catch (error) {
+        console.log(`ERROR - trying to verify user data. Error: `, error.errors || error);
+        next(ApiError.badRequest(error))
+    }
+}
+
 userMiddlewares.verifyUserUniqueData = async (request, response, next) => {
     try {
         connection.query(`
