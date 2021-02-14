@@ -7,6 +7,7 @@ const User = require('../models/User');
 
 // Helpers
 const string = require('../helpers/string');
+const formater = require('../helpers/formater');
 
 // Erros
 const ApiError = require('../errors/apiError');
@@ -62,6 +63,7 @@ const updateUser = async (userData, userId) => {
         const escapeData = {};
 
         const user = User.getUser(userId);
+        console.log(userData)
 
         if (userData.name) {
             escapeData.name = userData.name;
@@ -87,10 +89,10 @@ const updateUser = async (userData, userId) => {
         }
 
         if (Object.keys(escapeData).length > 0) {
-            await user.changeData(userData);
+            await user.changeData(escapeData);
+        } else {
+            throw ApiError.badRequest("No valid data given")
         }
-
-        return userId;
     } catch (error) {
         if(error instanceof ApiError){
             throw error;

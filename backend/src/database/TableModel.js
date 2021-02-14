@@ -33,11 +33,10 @@ class TableModel {
 
     async changeData(objectData) {
         return await connection.sqlUpdate(`
-            UPDATE ${this.identifierColumnName}
+            UPDATE ${this.tableName}
             SET ${Object.keys(objectData).map(key => {
             return `${connection.escapeId(key)} = :${key}`
         })}
-            FROM ${this.tableName}
             WHERE ${this.identifierColumnName} = :rowid
         `, { rowid: this.identifierColumnValue, ...objectData })
     }

@@ -13,7 +13,7 @@ const ApiError = require('../errors/apiError');
 
 const router = express.Router();
 
-router.get("/user", middlewares.verifyUserToken, async (request, response, next) => {
+router.get("/user", middlewares.user.verifyUserToken, async (request, response, next) => {
     try {
         const userId = validator.escape(request.user);
 
@@ -25,12 +25,13 @@ router.get("/user", middlewares.verifyUserToken, async (request, response, next)
         if (error instanceof ApiError) {
             next(error);
         } else {
+            console.error(`UNEXPECTED ERROR at GET user route. Error: `, error)
             next(ApiError.internalServerError("Something Went Wrong"))
         }
     }
 })
 
-router.post("/user", middlewares.verifyUserData, middlewares.verifyUserUniqueData, async (request, response, next) => {
+router.post("/register", middlewares.user.verifyUserData, middlewares.user.verifyUserUniqueData, async (request, response, next) => {
     try {
         const data = request.body;
 
@@ -44,12 +45,34 @@ router.post("/user", middlewares.verifyUserData, middlewares.verifyUserUniqueDat
         if (error instanceof ApiError) {
             next(error);
         } else {
+            console.error(`UNEXPECTED ERROR at POST register route. Error: `, error)
             next(ApiError.internalServerError("Something Went Wrong"))
         }
     }
 })
 
-router.post("/user/login", middlewares.verifyUserLoginData, async (request, response, next) => {
+router.put("/user", middlewares.user.verifyUserToken, middlewares.user.verifyUserEditData, async (request, response, next) => {
+    try {
+        const data = request.body;
+        const userId = request.user;
+
+        await UserController.updateUser(data, userId);
+
+        const userInfo = await UserController.getUserInfo(userId);
+
+        response.status(200).json(userInfo);
+
+    } catch (error) {
+        if (error instanceof ApiError) {
+            next(error);
+        } else {
+            console.error(`UNEXPECTED ERROR at PUT user route. Error: `, error)
+            next(ApiError.internalServerError("Something Went Wrong"))
+        }
+    }
+})
+
+router.post("/login", middlewares.user.verifyUserLoginData, async (request, response, next) => {
     try {
         const data = request.body;
 
@@ -61,6 +84,7 @@ router.post("/user/login", middlewares.verifyUserLoginData, async (request, resp
         if (error instanceof ApiError) {
             next(error);
         } else {
+            console.error(`UNEXPECTED ERROR at POST login route. Error: `, error)
             next(ApiError.internalServerError("Something Went Wrong"))
         }
     }

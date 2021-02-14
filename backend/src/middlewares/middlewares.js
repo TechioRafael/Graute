@@ -1,7 +1,7 @@
 const userMiddlewares = require('./userMiddlewares');
 
 const middlewares = {
-    ...userMiddlewares
+    user: userMiddlewares
 }
 
 module.exports = middlewares

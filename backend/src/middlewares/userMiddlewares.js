@@ -9,20 +9,31 @@ const connection = require('../database/connection');
 // Errors
 const ApiError = require("../errors/apiError");
 
-const userMiddlewares = {};
+// Helpers
+const validator = require('../helpers/validator');
 
-userMiddlewares.verifyUserToken = (request, response, next) => {
+const middlewares = {};
+
+middlewares.verifyUserToken = (request, response, next) => {
     try {
         const baererToken = request.headers.authorization;
-        const token = baererToken.split(" ")[1] || baererToken;
 
-        request.user = jwt.verify(token, process.env.SECRET);
+        if(!baererToken){
+            console.log(`REQUESTED ${request.method} ${request.url} BY ID ${request.user}`);
+            throw ApiError.badRequest('Authorization header is required')
+        }else {
+            const token = baererToken.split(" ")[1] || baererToken;
 
-        console.log(`REQUESTED ${request.method} ${request.url} BY ID ${request.user}`);
-
-        next();
+            request.user = jwt.verify(token, process.env.SECRET);
+    
+            console.log(`REQUESTED ${request.method} ${request.url} BY ID ${request.user}`);
+    
+            next();
+        }
     } catch (error) {
-        if (error.message == 'invalid signature') {
+        if(error instanceof ApiError){
+            next(error);
+        } if (error.message == 'invalid signature') {
             console.log(`REQUESTED ${request.method} ${request.url} BY USER WITH INVALID TOKEN`);
             next(ApiError.unauthorized('Invalid token'))
         } else {
@@ -32,12 +43,12 @@ userMiddlewares.verifyUserToken = (request, response, next) => {
     }
 }
 
-userMiddlewares.verifyUserData = async (request, response, next) => {
+middlewares.verifyUserData = async (request, response, next) => {
     try {
         const schema = yup.object().required().shape({
-            name: yup.string().required().min(7),
-            email: yup.string().required().email(),
-            password: yup.string().required().min(8),
+            name: yup.string().required().min(7).max(50),
+            email: yup.string().required().email().max(25),
+            password: yup.string().required().min(8).max(20).matches(validator.password, {message: 'Password must have letters and numbers'}),
             birthdate: yup.date().required()
         });
 
@@ -50,12 +61,12 @@ userMiddlewares.verifyUserData = async (request, response, next) => {
     }
 }
 
-userMiddlewares.verifyUserEditData = async (request, response, next) => {
+middlewares.verifyUserEditData = async (request, response, next) => {
     try {
         const schema = yup.object().required().shape({
-            name: yup.string().notRequired().min(7),
-            email: yup.string().notRequired().email(),
-            password: yup.string().notRequired().min(8),
+            name: yup.string().notRequired().min(7).max(20),
+            email: yup.string().notRequired().email().max(25),
+            password: yup.string().notRequired().min(8).max(20).matches(validator.password),
             birthdate: yup.date().notRequired()
         });
 
@@ -68,7 +79,7 @@ userMiddlewares.verifyUserEditData = async (request, response, next) => {
     }
 }
 
-userMiddlewares.verifyUserUniqueData = async (request, response, next) => {
+middlewares.verifyUserUniqueData = async (request, response, next) => {
     try {
         connection.query(`
             SELECT id, name, email
@@ -103,7 +114,7 @@ userMiddlewares.verifyUserUniqueData = async (request, response, next) => {
     }
 }
 
-userMiddlewares.verifyUserLoginData = async (request, response, next) => {
+middlewares.verifyUserLoginData = async (request, response, next) => {
     try {
         const schema = yup.object().required().shape({
             login: yup.string().required(),
@@ -118,4 +129,4 @@ userMiddlewares.verifyUserLoginData = async (request, response, next) => {
         next(ApiError.badRequest(error))
     }
 }
-module.exports = userMiddlewares;
+module.exports = middlewares;

