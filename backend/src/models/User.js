@@ -6,6 +6,16 @@ class User extends TableModel {
         super('user', 'id', id);
     }
 
+    async getUserData(){
+        return await TableModel.sqlSelectRow(`
+            SELECT ${this.tableName}.*,
+                user_status.name AS status_name
+            FROM ${this.tableName}
+                INNER JOIN user_status ON user_status.id = ${this.tableName}.id_status
+            WHERE ${this.tableName}.${this.identifierColumnName} = ${this.identifierColumnValue}
+        `)
+    }
+
     static getUser(id) {
         return new User(id);
     }

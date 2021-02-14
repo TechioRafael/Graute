@@ -7,7 +7,6 @@ const User = require('../models/User');
 
 // Helpers
 const string = require('../helpers/string');
-const formater = require('../helpers/formater');
 
 // Erros
 const ApiError = require('../errors/apiError');
@@ -17,12 +16,16 @@ const getUserInfo = async (userId) => {
 
         const user = User.getUser(userId);
 
-        const userInfo = await user.getData();
-
+        const userInfo = await user.getUserData();
+        
         const formattedData = {
             name: userInfo.name,
             email: userInfo.email,
-            birthdate: userInfo.birthdate
+            birthdate: userInfo.birthdate,
+            status: {
+                id: userInfo.id_status,
+                name: userInfo.status_name
+            }
         }
 
         return formattedData;
