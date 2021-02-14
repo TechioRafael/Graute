@@ -51,7 +51,7 @@ router.post("/register", middlewares.user.verifyUserData, middlewares.user.verif
     }
 })
 
-router.put("/user", middlewares.user.verifyUserToken, middlewares.user.verifyUserEditData, async (request, response, next) => {
+router.put("/user", middlewares.user.verifyUserToken, middlewares.user.verifyUserStatus, middlewares.user.verifyUserEditData, async (request, response, next) => {
     try {
         const data = request.body;
         const userId = request.user;

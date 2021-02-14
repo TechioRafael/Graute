@@ -17,7 +17,7 @@ const getUserInfo = async (userId) => {
         const user = User.getUser(userId);
 
         const userInfo = await user.getUserData();
-        
+
         const formattedData = {
             name: userInfo.name,
             email: userInfo.email,
@@ -31,7 +31,7 @@ const getUserInfo = async (userId) => {
         return formattedData;
 
     } catch (error) {
-        console.log(`ERROR - trying to GET user data with ID ${userId}. Error:`, error);
+        console.error(`ERROR - trying to GET user data with ID ${userId}. Error:`, error);
         return false;
     }
 }
@@ -55,7 +55,7 @@ const createUser = async (userData) => {
 
         return newUserId;
     } catch (error) {
-        console.log(`ERROR - trying to CREATE user. Error:`, error);
+        console.error(`ERROR - trying to CREATE user. Error:`, error);
 
         throw ApiError.internalServerError("Something gets wrong");
     }
@@ -66,7 +66,7 @@ const updateUser = async (userData, userId) => {
         const escapeData = {};
 
         const user = User.getUser(userId);
-        console.log(userData)
+        // console.log(userData)
 
         if (userData.name) {
             escapeData.name = userData.name;
@@ -100,7 +100,7 @@ const updateUser = async (userData, userId) => {
         if(error instanceof ApiError){
             throw error;
         }else{
-            console.log(`ERROR - trying to Update User's (${userId}) data. Error:`, error);
+            console.error(`ERROR - trying to Update User's (${userId}) data. Error:`, error);
             throw ApiError.internalServerError("Something Went Wrong");
         }
     }
@@ -122,7 +122,7 @@ const login = async (data) => {
         if (error instanceof ApiError) {
             throw error;
         } else {
-            console.log(`ERROR - trying to login. Error:`, error);
+            console.error(`ERROR - trying to login. Error:`, error);
 
             throw ApiError.internalServerError("Something gets wrong")
         }

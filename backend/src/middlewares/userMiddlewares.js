@@ -37,7 +37,7 @@ middlewares.verifyUserToken = (request, response, next) => {
             console.log(`REQUESTED ${request.method} ${request.url} BY USER WITH INVALID TOKEN`);
             next(ApiError.unauthorized('Invalid token'))
         } else {
-            console.log(`ERROR - trying to verify user token. Error: `, error);
+            console.error(`ERROR - trying to verify user token. Error: `, error);
             next(ApiError.internalServerError('Something Went Wrong'))
         }
     }
@@ -56,7 +56,7 @@ middlewares.verifyUserData = async (request, response, next) => {
         request.body = normalizedData;
         next();
     } catch (error) {
-        console.log(`ERROR - trying to verify user data. Error: `, error.errors || error);
+        console.error(`ERROR - trying to verify user data. Error: `, error.errors || error);
         next(ApiError.badRequest(error))
     }
 }
@@ -74,8 +74,38 @@ middlewares.verifyUserEditData = async (request, response, next) => {
         request.body = normalizedData;
         next();
     } catch (error) {
-        console.log(`ERROR - trying to verify user data. Error: `, error.errors || error);
+        console.error(`ERROR - trying to verify user data. Error: `, error.errors || error);
         next(ApiError.badRequest(error))
+    }
+}
+
+middlewares.verifyUserStatus = async (request, response, next) => {
+    try {
+        connection.query(`
+            SELECT 
+                user_status.id,
+                user_status.can_edit_data
+            FROM ${connection.escapeId(`user`)}
+                INNER JOIN user_status ON user_status.id = ${connection.escapeId('user')}.id_status
+            WHERE ${connection.escapeId(`user`)}.id = :id
+        `, { id: request.user },
+            (error, results, fields) => {
+                if (error) {
+                    throw error;
+                } else {
+                    if (!results || !results[0] || !results[0].id) {
+                        console.error(`ERROR - trying to verify user ${req.user} status. Results: `, results)
+                        next(ApiError.notFound(`User status not found`))
+                    } else if (!results[0].can_edit_data) {
+                        next(ApiError.forbidden(`User don't have permission to edit own data.`))
+                    } else {
+                        next();
+                    }
+                }
+            })
+    } catch (error) {
+        console.error(`ERROR - trying to verify unique user data. Error: `, error);
+        next(ApiError.internalServerError("Something gets wrong"))
     }
 }
 
@@ -83,7 +113,7 @@ middlewares.verifyUserUniqueData = async (request, response, next) => {
     try {
         connection.query(`
             SELECT id, name, email
-            FROM user
+            FROM ${connection.escapeId(user)}
             WHERE name = :name 
                 OR email = :email
         `, { name: request.body.name, email: request.body.email },
@@ -109,7 +139,7 @@ middlewares.verifyUserUniqueData = async (request, response, next) => {
                 }
             })
     } catch (error) {
-        console.log(`ERROR - trying to verify unique user data. Error: `, error);
+        console.error(`ERROR - trying to verify unique user data. Error: `, error);
         next(ApiError.internalServerError("Something gets wrong"))
     }
 }
@@ -125,7 +155,7 @@ middlewares.verifyUserLoginData = async (request, response, next) => {
         request.body = normalizedData;
         next();
     } catch (error) {
-        console.log(`ERROR - trying to verify user data. Error: `, error.errors || error);
+        console.error(`ERROR - trying to verify user data. Error: `, error.errors || error);
         next(ApiError.badRequest(error))
     }
 }
