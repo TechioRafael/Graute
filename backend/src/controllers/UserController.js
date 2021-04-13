@@ -19,12 +19,14 @@ const getUserInfo = async (userId) => {
         const userInfo = await user.getUserData();
 
         const formattedData = {
-            name: userInfo.name,
+            nickname: userInfo.nickname,
             email: userInfo.email,
             birthdate: userInfo.birthdate,
             status: {
-                id: userInfo.id_status,
-                name: userInfo.status_name
+                id: userInfo.status_id,
+                name: userInfo.status_name,
+                visible: !!userInfo.status_visible,
+                editable: !!userInfo.status_editable,
             }
         }
 
@@ -43,7 +45,7 @@ const createUser = async (userData) => {
         const user = User.getUser();
 
         const newUserId = user.create({
-            name: userData.name ? userData.name : '',
+            nickname: userData.nickname ? userData.nickname : '',
             email: userData.email ? userData.email : '',
             password: {
                 raw: true,
@@ -68,8 +70,8 @@ const updateUser = async (userData, userId) => {
         const user = User.getUser(userId);
         // console.log(userData)
 
-        if (userData.name) {
-            escapeData.name = userData.name;
+        if (userData.nickname) {
+            escapeData.nickname = userData.nickname;
         }
 
         if (userData.email) {

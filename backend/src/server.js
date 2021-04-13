@@ -14,6 +14,8 @@ http.createServer(server);
 
 server.use(express.json())
 server.use(routes);
+
+
 server.use(errorHandler);
 
 server.listen(process.env.API_PORT, () => {

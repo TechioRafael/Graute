@@ -13,7 +13,7 @@ const ApiError = require('../errors/apiError');
 
 const router = express.Router();
 
-router.get("/user", middlewares.user.verifyUserToken, async (request, response, next) => {
+router.get("/user", middlewares.user.verifyUserToken, middlewares.user.verifyUserDataStatus, async (request, response, next) => {
     try {
         const userId = validator.escape(request.user);
 
@@ -51,7 +51,7 @@ router.post("/register", middlewares.user.verifyUserData, middlewares.user.verif
     }
 })
 
-router.put("/user", middlewares.user.verifyUserToken, middlewares.user.verifyUserStatus, middlewares.user.verifyUserEditData, async (request, response, next) => {
+router.put("/user", middlewares.user.verifyUserToken, middlewares.user.verifyUserEditStatus, middlewares.user.verifyUserEditData, async (request, response, next) => {
     try {
         const data = request.body;
         const userId = request.user;

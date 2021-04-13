@@ -18,20 +18,20 @@ middlewares.verifyUserToken = (request, response, next) => {
     try {
         const baererToken = request.headers.authorization;
 
-        if(!baererToken){
+        if (!baererToken) {
             console.log(`REQUESTED ${request.method} ${request.url} BY ID ${request.user}`);
             throw ApiError.badRequest('Authorization header is required')
-        }else {
+        } else {
             const token = baererToken.split(" ")[1] || baererToken;
 
             request.user = jwt.verify(token, process.env.SECRET);
-    
+
             console.log(`REQUESTED ${request.method} ${request.url} BY ID ${request.user}`);
-    
+
             next();
         }
     } catch (error) {
-        if(error instanceof ApiError){
+        if (error instanceof ApiError) {
             next(error);
         } if (error.message == 'invalid signature') {
             console.log(`REQUESTED ${request.method} ${request.url} BY USER WITH INVALID TOKEN`);
@@ -46,9 +46,9 @@ middlewares.verifyUserToken = (request, response, next) => {
 middlewares.verifyUserData = async (request, response, next) => {
     try {
         const schema = yup.object().required().shape({
-            name: yup.string().required().min(7).max(50),
+            nickname: yup.string().required().min(7).max(50),
             email: yup.string().required().email().max(25),
-            password: yup.string().required().min(8).max(20).matches(validator.password, {message: 'Password must have letters and numbers'}),
+            password: yup.string().required().min(8).max(20).matches(validator.password, { message: 'Password must have letters and numbers' }),
             birthdate: yup.date().required()
         });
 
@@ -64,7 +64,7 @@ middlewares.verifyUserData = async (request, response, next) => {
 middlewares.verifyUserEditData = async (request, response, next) => {
     try {
         const schema = yup.object().required().shape({
-            name: yup.string().notRequired().min(7).max(20),
+            nickname: yup.string().notRequired().min(7).max(20),
             email: yup.string().notRequired().email().max(25),
             password: yup.string().notRequired().min(8).max(20).matches(validator.password),
             birthdate: yup.date().notRequired()
@@ -79,25 +79,55 @@ middlewares.verifyUserEditData = async (request, response, next) => {
     }
 }
 
-middlewares.verifyUserStatus = async (request, response, next) => {
+middlewares.verifyUserEditStatus = async (request, response, next) => {
     try {
         connection.query(`
             SELECT 
-                user_status.id,
-                user_status.can_edit_data
-            FROM ${connection.escapeId(`user`)}
-                INNER JOIN user_status ON user_status.id = ${connection.escapeId('user')}.id_status
-            WHERE ${connection.escapeId(`user`)}.id = :id
+                gg_user_status.id,
+                gg_user_status.editable
+            FROM gg_user
+                INNER JOIN gg_user_status ON gg_user_status.id = gg_user.status_id
+            WHERE gg_user.id = :id
+        `, { id: request.user },
+            (error, results, fields) => {
+            if(error) {
+                throw error;
+            } else {
+                if(!results || !results[0] || !results[0].id) {
+            console.error(`ERROR - trying to verify user ${request.user} status. Results: `, results)
+            next(ApiError.notFound(`User status not found`))
+        } else if (!results[0].editable) {
+            next(ApiError.forbidden(`User don't have permission to edit it own data.`))
+        } else {
+            next();
+        }
+    }
+            })
+    } catch (error) {
+    console.error(`ERROR - trying to verify unique user data. Error: `, error);
+    next(ApiError.internalServerError("Something gets wrong"))
+}
+}
+
+middlewares.verifyUserDataStatus = async (request, response, next) => {
+    try {
+        connection.query(`
+            SELECT 
+                gg_user_status.id,
+                gg_user_status.visible
+            FROM gg_user
+                INNER JOIN gg_user_status ON gg_user_status.id = gg_user.status_id
+            WHERE gg_user.id = :id
         `, { id: request.user },
             (error, results, fields) => {
                 if (error) {
                     throw error;
                 } else {
                     if (!results || !results[0] || !results[0].id) {
-                        console.error(`ERROR - trying to verify user ${req.user} status. Results: `, results)
+                        console.error(`ERROR - trying to verify user ${request.user} status. Results: `, results)
                         next(ApiError.notFound(`User status not found`))
-                    } else if (!results[0].can_edit_data) {
-                        next(ApiError.forbidden(`User don't have permission to edit own data.`))
+                    } else if (!results[0].visible) {
+                        next(ApiError.forbidden(`User don't have permission to see it own data.`))
                     } else {
                         next();
                     }
@@ -112,11 +142,11 @@ middlewares.verifyUserStatus = async (request, response, next) => {
 middlewares.verifyUserUniqueData = async (request, response, next) => {
     try {
         connection.query(`
-            SELECT id, name, email
-            FROM ${connection.escapeId(user)}
-            WHERE name = :name 
+            SELECT id, nickname, email
+            FROM ${connection.escapeId('gg_user')}
+            WHERE nickname = :nickname 
                 OR email = :email
-        `, { name: request.body.name, email: request.body.email },
+        `, { nickname: request.body.nickname, email: request.body.email },
             (error, results, fields) => {
                 if (error) {
                     throw error;
@@ -125,11 +155,11 @@ middlewares.verifyUserUniqueData = async (request, response, next) => {
                         next(ApiError.conflict(`Name and Email alread be registred`))
                     } else if (
                         results && results[0] &&
-                        results[0].name.toString().toLowerCase() == request.body.name.toLowerCase() &&
+                        results[0].nickname.toString().toLowerCase() == request.body.nickname.toLowerCase() &&
                         results[0].email.toString().toLowerCase() == request.body.email.toLowerCase()
                     ) {
                         next(ApiError.conflict(`Name and Email alread be registred`))
-                    } else if (results && results[0] && results[0].name.toString().toLowerCase() == request.body.name.toLowerCase()) {
+                    } else if (results && results[0] && results[0].nickname.toString().toLowerCase() == request.body.nickname.toLowerCase()) {
                         next(ApiError.conflict(`Name alread be registred`))
                     } else if (results && results[0] && results[0].email.toString().toLowerCase() == request.body.email.toLowerCase()) {
                         next(ApiError.conflict(`Email alread be registred`));
